@@ -19,9 +19,9 @@ limitations under the License.
 package applyconfiguration
 
 import (
-	v1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample/v1alpha1"
+	v1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample.com/v1alpha1"
 	internal "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration/internal"
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration/sample/v1alpha1"
+	samplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration/sample.com/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	testing "k8s.io/client-go/testing"
@@ -31,13 +31,13 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=sample, Version=v1alpha1
+	// Group=sample.com, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Foo"):
-		return &samplev1alpha1.FooApplyConfiguration{}
+		return &samplecomv1alpha1.FooApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("FooSpec"):
-		return &samplev1alpha1.FooSpecApplyConfiguration{}
+		return &samplecomv1alpha1.FooSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("FooStatus"):
-		return &samplev1alpha1.FooStatusApplyConfiguration{}
+		return &samplecomv1alpha1.FooStatusApplyConfiguration{}
 
 	}
 	return nil

@@ -20,7 +20,7 @@ package sample
 
 import (
 	internalinterfaces "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/sample/v1alpha1"
+	v1alpha1 "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/sample.com/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

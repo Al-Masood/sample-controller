@@ -21,8 +21,8 @@ package fake
 import (
 	applyconfiguration "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration"
 	clientset "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned"
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample/v1alpha1"
-	fakesamplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample/v1alpha1/fake"
+	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample.com/v1alpha1"
+	fakesamplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample.com/v1alpha1/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"

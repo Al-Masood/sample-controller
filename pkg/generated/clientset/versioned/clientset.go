@@ -22,7 +22,7 @@ import (
 	fmt "fmt"
 	http "net/http"
 
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample/v1alpha1"
+	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample.com/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

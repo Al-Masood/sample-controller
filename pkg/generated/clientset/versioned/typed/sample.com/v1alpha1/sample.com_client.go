@@ -21,7 +21,7 @@ package v1alpha1
 import (
 	http "net/http"
 
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample/v1alpha1"
+	samplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample.com/v1alpha1"
 	scheme "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
@@ -31,7 +31,7 @@ type SampleV1alpha1Interface interface {
 	FoosGetter
 }
 
-// SampleV1alpha1Client is used to interact with features provided by the sample group.
+// SampleV1alpha1Client is used to interact with features provided by the sample.com group.
 type SampleV1alpha1Client struct {
 	restClient rest.Interface
 }
@@ -81,7 +81,7 @@ func New(c rest.Interface) *SampleV1alpha1Client {
 }
 
 func setConfigDefaults(config *rest.Config) {
-	gv := samplev1alpha1.SchemeGroupVersion
+	gv := samplecomv1alpha1.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
 	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()

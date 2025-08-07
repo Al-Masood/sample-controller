@@ -19,21 +19,21 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample/v1alpha1"
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration/sample/v1alpha1"
-	typedsamplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample/v1alpha1"
+	v1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample.com/v1alpha1"
+	samplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration/sample.com/v1alpha1"
+	typedsamplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/typed/sample.com/v1alpha1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeFoos implements FooInterface
 type fakeFoos struct {
-	*gentype.FakeClientWithListAndApply[*v1alpha1.Foo, *v1alpha1.FooList, *samplev1alpha1.FooApplyConfiguration]
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Foo, *v1alpha1.FooList, *samplecomv1alpha1.FooApplyConfiguration]
 	Fake *FakeSampleV1alpha1
 }
 
-func newFakeFoos(fake *FakeSampleV1alpha1, namespace string) typedsamplev1alpha1.FooInterface {
+func newFakeFoos(fake *FakeSampleV1alpha1, namespace string) typedsamplecomv1alpha1.FooInterface {
 	return &fakeFoos{
-		gentype.NewFakeClientWithListAndApply[*v1alpha1.Foo, *v1alpha1.FooList, *samplev1alpha1.FooApplyConfiguration](
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Foo, *v1alpha1.FooList, *samplecomv1alpha1.FooApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.SchemeGroupVersion.WithResource("foos"),

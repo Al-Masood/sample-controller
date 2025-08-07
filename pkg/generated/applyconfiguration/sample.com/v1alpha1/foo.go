@@ -40,7 +40,7 @@ func Foo(name, namespace string) *FooApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("Foo")
-	b.WithAPIVersion("sample/v1alpha1")
+	b.WithAPIVersion("sample.com/v1alpha1")
 	return b
 }
 

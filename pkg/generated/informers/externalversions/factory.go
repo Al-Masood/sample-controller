@@ -25,7 +25,7 @@ import (
 
 	versioned "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned"
 	internalinterfaces "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/internalinterfaces"
-	sample "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/sample"
+	samplecom "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/sample.com"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -254,9 +254,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Sample() sample.Interface
+	Sample() samplecom.Interface
 }
 
-func (f *sharedInformerFactory) Sample() sample.Interface {
-	return sample.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Sample() samplecom.Interface {
+	return samplecom.New(f, f.namespace, f.tweakListOptions)
 }

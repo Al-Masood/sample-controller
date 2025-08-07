@@ -21,8 +21,8 @@ package v1alpha1
 import (
 	context "context"
 
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample/v1alpha1"
-	applyconfigurationsamplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration/sample/v1alpha1"
+	samplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample.com/v1alpha1"
+	applyconfigurationsamplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/generated/applyconfiguration/sample.com/v1alpha1"
 	scheme "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -38,37 +38,37 @@ type FoosGetter interface {
 
 // FooInterface has methods to work with Foo resources.
 type FooInterface interface {
-	Create(ctx context.Context, foo *samplev1alpha1.Foo, opts v1.CreateOptions) (*samplev1alpha1.Foo, error)
-	Update(ctx context.Context, foo *samplev1alpha1.Foo, opts v1.UpdateOptions) (*samplev1alpha1.Foo, error)
+	Create(ctx context.Context, foo *samplecomv1alpha1.Foo, opts v1.CreateOptions) (*samplecomv1alpha1.Foo, error)
+	Update(ctx context.Context, foo *samplecomv1alpha1.Foo, opts v1.UpdateOptions) (*samplecomv1alpha1.Foo, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, foo *samplev1alpha1.Foo, opts v1.UpdateOptions) (*samplev1alpha1.Foo, error)
+	UpdateStatus(ctx context.Context, foo *samplecomv1alpha1.Foo, opts v1.UpdateOptions) (*samplecomv1alpha1.Foo, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*samplev1alpha1.Foo, error)
-	List(ctx context.Context, opts v1.ListOptions) (*samplev1alpha1.FooList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*samplecomv1alpha1.Foo, error)
+	List(ctx context.Context, opts v1.ListOptions) (*samplecomv1alpha1.FooList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *samplev1alpha1.Foo, err error)
-	Apply(ctx context.Context, foo *applyconfigurationsamplev1alpha1.FooApplyConfiguration, opts v1.ApplyOptions) (result *samplev1alpha1.Foo, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *samplecomv1alpha1.Foo, err error)
+	Apply(ctx context.Context, foo *applyconfigurationsamplecomv1alpha1.FooApplyConfiguration, opts v1.ApplyOptions) (result *samplecomv1alpha1.Foo, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, foo *applyconfigurationsamplev1alpha1.FooApplyConfiguration, opts v1.ApplyOptions) (result *samplev1alpha1.Foo, err error)
+	ApplyStatus(ctx context.Context, foo *applyconfigurationsamplecomv1alpha1.FooApplyConfiguration, opts v1.ApplyOptions) (result *samplecomv1alpha1.Foo, err error)
 	FooExpansion
 }
 
 // foos implements FooInterface
 type foos struct {
-	*gentype.ClientWithListAndApply[*samplev1alpha1.Foo, *samplev1alpha1.FooList, *applyconfigurationsamplev1alpha1.FooApplyConfiguration]
+	*gentype.ClientWithListAndApply[*samplecomv1alpha1.Foo, *samplecomv1alpha1.FooList, *applyconfigurationsamplecomv1alpha1.FooApplyConfiguration]
 }
 
 // newFoos returns a Foos
 func newFoos(c *SampleV1alpha1Client, namespace string) *foos {
 	return &foos{
-		gentype.NewClientWithListAndApply[*samplev1alpha1.Foo, *samplev1alpha1.FooList, *applyconfigurationsamplev1alpha1.FooApplyConfiguration](
+		gentype.NewClientWithListAndApply[*samplecomv1alpha1.Foo, *samplecomv1alpha1.FooList, *applyconfigurationsamplecomv1alpha1.FooApplyConfiguration](
 			"foos",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *samplev1alpha1.Foo { return &samplev1alpha1.Foo{} },
-			func() *samplev1alpha1.FooList { return &samplev1alpha1.FooList{} },
+			func() *samplecomv1alpha1.Foo { return &samplecomv1alpha1.Foo{} },
+			func() *samplecomv1alpha1.FooList { return &samplecomv1alpha1.FooList{} },
 		),
 	}
 }

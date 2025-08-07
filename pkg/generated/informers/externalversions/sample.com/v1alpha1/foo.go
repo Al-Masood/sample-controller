@@ -22,10 +22,10 @@ import (
 	context "context"
 	time "time"
 
-	apissamplev1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample/v1alpha1"
+	apissamplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample.com/v1alpha1"
 	versioned "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned"
 	internalinterfaces "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/internalinterfaces"
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/generated/listers/sample/v1alpha1"
+	samplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/generated/listers/sample.com/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -36,7 +36,7 @@ import (
 // Foos.
 type FooInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() samplev1alpha1.FooLister
+	Lister() samplecomv1alpha1.FooLister
 }
 
 type fooInformer struct {
@@ -83,7 +83,7 @@ func NewFilteredFooInformer(client versioned.Interface, namespace string, resync
 				return client.SampleV1alpha1().Foos(namespace).Watch(ctx, options)
 			},
 		},
-		&apissamplev1alpha1.Foo{},
+		&apissamplecomv1alpha1.Foo{},
 		resyncPeriod,
 		indexers,
 	)
@@ -94,9 +94,9 @@ func (f *fooInformer) defaultInformer(client versioned.Interface, resyncPeriod t
 }
 
 func (f *fooInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apissamplev1alpha1.Foo{}, f.defaultInformer)
+	return f.factory.InformerFor(&apissamplecomv1alpha1.Foo{}, f.defaultInformer)
 }
 
-func (f *fooInformer) Lister() samplev1alpha1.FooLister {
-	return samplev1alpha1.NewFooLister(f.Informer().GetIndexer())
+func (f *fooInformer) Lister() samplecomv1alpha1.FooLister {
+	return samplecomv1alpha1.NewFooLister(f.Informer().GetIndexer())
 }

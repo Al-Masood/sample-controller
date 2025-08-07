@@ -19,7 +19,7 @@ limitations under the License.
 package scheme
 
 import (
-	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample/v1alpha1"
+	samplev1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample.com/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
