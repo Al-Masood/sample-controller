@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	samplecomv1alpha1 "github.com/al-masood/sample-controller/pkg/apis/sample.com/v1alpha1"
 	"golang.org/x/time/rate"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -19,14 +22,18 @@ import (
 	clientset "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned"
 	informers "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions/sample.com/v1alpha1"
 	listers "github.com/al-masood/sample-controller/pkg/generated/listers/sample.com/v1alpha1"
+	appsinformers "k8s.io/client-go/informers/apps/v1"
+	appslisters "k8s.io/client-go/listers/apps/v1"
 )
 
 type Controller struct {
-	kubeclientset   kubernetes.Interface
-	sampleclientset clientset.Interface
-	foosLister      listers.FooLister
-	foosSynced      cache.InformerSynced
-	workqueue       workqueue.TypedRateLimitingInterface[cache.ObjectName]
+	kubeclientset     kubernetes.Interface
+	sampleclientset   clientset.Interface
+	deploymentsLister appslisters.DeploymentLister
+	deploymentsSynced cache.InformerSynced
+	foosLister        listers.FooLister
+	foosSynced        cache.InformerSynced
+	workqueue         workqueue.TypedRateLimitingInterface[cache.ObjectName]
 }
 
 // NewController returns a new sample controller
@@ -34,6 +41,7 @@ func NewController(
 	ctx context.Context,
 	kubeclientset kubernetes.Interface,
 	sampleclientset clientset.Interface,
+	deploymentInformer appsinformers.DeploymentInformer,
 	fooInformer informers.FooInformer) *Controller {
 
 	ratelimiter := workqueue.NewTypedMaxOfRateLimiter(
@@ -42,11 +50,13 @@ func NewController(
 	)
 
 	controller := &Controller{
-		kubeclientset:   kubeclientset,
-		sampleclientset: sampleclientset,
-		foosLister:      fooInformer.Lister(),
-		foosSynced:      fooInformer.Informer().HasSynced,
-		workqueue:       workqueue.NewTypedRateLimitingQueue(ratelimiter),
+		kubeclientset:     kubeclientset,
+		sampleclientset:   sampleclientset,
+		foosLister:        fooInformer.Lister(),
+		foosSynced:        fooInformer.Informer().HasSynced,
+		deploymentsLister: deploymentInformer.Lister(),
+		deploymentsSynced: deploymentInformer.Informer().HasSynced,
+		workqueue:         workqueue.NewTypedRateLimitingQueue(ratelimiter),
 	}
 
 	fooInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -54,6 +64,22 @@ func NewController(
 		UpdateFunc: func(old, new interface{}) {
 			controller.enqueueFoo(new)
 		},
+		DeleteFunc: controller.enqueueFoo,
+	})
+
+	deploymentInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.handleObject,
+		UpdateFunc: func(old, new interface{}) {
+			newDepl := new.(*appsv1.Deployment)
+			oldDepl := old.(*appsv1.Deployment)
+
+			if newDepl.ResourceVersion == oldDepl.ResourceVersion {
+				return
+			}
+
+			controller.handleObject(new)
+		},
+		DeleteFunc: controller.handleObject,
 	})
 
 	return controller
@@ -68,7 +94,7 @@ func (c *Controller) Run(ctx context.Context, workers int) error {
 
 	logger.Info("Waiting for informer caches to sync")
 
-	if ok := cache.WaitForCacheSync(ctx.Done(), c.foosSynced); !ok {
+	if ok := cache.WaitForCacheSync(ctx.Done(), c.foosSynced, c.deploymentsSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
@@ -124,8 +150,49 @@ func (c *Controller) syncHandler(ctx context.Context, objectRef cache.ObjectName
 		return err
 	}
 
+	deploymentName := foo.Spec.DeploymentName
+
+	if deploymentName == "" {
+		utilruntime.HandleErrorWithContext(ctx, nil, "Deployment name missing from object reference", "objectReference", objectRef)
+		return nil
+	}
+
+	deployment, err := c.deploymentsLister.Deployments(foo.Namespace).Get(deploymentName)
+
+	if errors.IsNotFound(err) {
+		deployment, err = c.kubeclientset.AppsV1().Deployments(foo.Namespace).Create(ctx, newDeployment(foo), metav1.CreateOptions{})
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if foo.Spec.Replicas != nil && *foo.Spec.Replicas != *deployment.Spec.Replicas {
+		logger.V(4).Info("Update deployment resource", "currentReplicas", *deployment.Spec.Replicas, "desiredReplicas", *foo.Spec.Replicas)
+		deployment, err = c.kubeclientset.AppsV1().Deployments(foo.Namespace).Update(ctx, newDeployment(foo), metav1.UpdateOptions{})
+	}
+
+	if err != nil {
+		return err
+	}
+
+	err = c.updateFooStatus(ctx, foo, deployment)
+
+	if err != nil {
+		return err
+	}
+
 	logger.Info("Successfully processed Foo", "foo", klog.KObj(foo))
 	return nil
+}
+
+func (c *Controller) updateFooStatus(ctx context.Context, foo *samplecomv1alpha1.Foo, deployment *appsv1.Deployment) error {
+	fooCopy := foo.DeepCopy()
+	fooCopy.Status.AvailableReplicas = deployment.Status.AvailableReplicas
+
+	_, err := c.sampleclientset.SampleV1alpha1().Foos(foo.Namespace).UpdateStatus(ctx, fooCopy, metav1.UpdateOptions{})
+
+	return err
 }
 
 func (c *Controller) enqueueFoo(obj interface{}) {
@@ -168,5 +235,39 @@ func (c *Controller) handleObject(obj interface{}) {
 
 		c.enqueueFoo(foo)
 		return
+	}
+}
+
+func newDeployment(foo *samplecomv1alpha1.Foo) *appsv1.Deployment {
+	labels := map[string]string{
+		"app": "foo",
+	}
+
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: foo.Spec.DeploymentName,
+			OwnerReferences: []metav1.OwnerReference{
+				*metav1.NewControllerRef(foo, samplecomv1alpha1.SchemeGroupVersion.WithKind("Foo")),
+			},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: foo.Spec.Replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "nginx",
+							Image: "nginx:latest",
+						},
+					},
+				},
+			},
+		},
 	}
 }

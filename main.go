@@ -13,6 +13,7 @@ import (
 
 	clientset "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned"
 	informers "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions"
+	kubeinformers "k8s.io/client-go/informers"
 )
 
 func main() {
@@ -46,11 +47,12 @@ func main() {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
+	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
 	sampleInformerFactory := informers.NewSharedInformerFactory(sampleClient, time.Second*30)
 
-	controller := NewController(ctx, kubeClient, sampleClient,
-		sampleInformerFactory.Sample().V1alpha1().Foos())
+	controller := NewController(ctx, kubeClient, sampleClient, kubeInformerFactory.Apps().V1().Deployments(), sampleInformerFactory.Sample().V1alpha1().Foos())
 
+	kubeInformerFactory.Start(ctx.Done())
 	sampleInformerFactory.Start(ctx.Done())
 
 	if err = controller.Run(ctx, 2); err != nil {
