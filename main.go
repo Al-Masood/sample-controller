@@ -1,47 +1,60 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
-	"log"
 	"path/filepath"
+	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/al-masood/sample-controller/pkg/signals"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog/v2"
 
-	klient "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned"
+	clientset "github.com/al-masood/sample-controller/pkg/generated/clientset/versioned"
+	informers "github.com/al-masood/sample-controller/pkg/generated/informers/externalversions"
 )
 
 func main() {
-	var kubeconfig *string
+	ctx := signals.SetupSignalHandler()
+	logger := klog.FromContext(ctx)
 
+	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "")
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
-		kubeconfig = flag.String("kubeconfig", "", "")
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 
 	flag.Parse()
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-
+	cfg, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		log.Printf("Building config from flag, %s", err.Error())
+		logger.Error(err, "Error building kubeconfig")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	klientset, err := klient.NewForConfig(config)
+	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		log.Printf(err.Error())
+		logger.Error(err, "Error building kubernetes clientset")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	fmt.Println(klientset)
-
-	foos, err := klientset.SampleV1alpha1().Foos("").List(context.Background(), metav1.ListOptions{})
+	sampleClient, err := clientset.NewForConfig(cfg)
 	if err != nil {
-		log.Printf(err.Error())
+		logger.Error(err, "Error building kubernetes clientset")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	fmt.Printf("length of klusters is %d\n", len(foos.Items))
+	sampleInformerFactory := informers.NewSharedInformerFactory(sampleClient, time.Second*30)
+
+	controller := NewController(ctx, kubeClient, sampleClient,
+		sampleInformerFactory.Sample().V1alpha1().Foos())
+
+	sampleInformerFactory.Start(ctx.Done())
+
+	if err = controller.Run(ctx, 2); err != nil {
+		logger.Error(err, "Error running controller")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 }

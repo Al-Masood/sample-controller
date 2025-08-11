@@ -4,4 +4,4 @@ metadata:
   name: foo1
 spec:
   deploymentName: foo1
-  replicas: 2
+  replicas: 3
