@@ -39,11 +39,14 @@ spec:
             properties:
               deploymentName:
                 type: string
+              image:
+                type: string
               replicas:
                 format: int32
                 type: integer
             required:
             - deploymentName
+            - image
             - replicas
             type: object
           status:
@@ -60,4 +63,4 @@ spec:
     served: true
     storage: true
     subresources:
-      status: { }
+      status: {}

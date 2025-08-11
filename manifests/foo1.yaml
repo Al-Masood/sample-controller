@@ -5,3 +5,4 @@ metadata:
 spec:
   deploymentName: foo1
   replicas: 1
+  image: almasood/book-server

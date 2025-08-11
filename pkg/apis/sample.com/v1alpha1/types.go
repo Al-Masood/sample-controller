@@ -17,6 +17,7 @@ type Foo struct {
 type FooSpec struct {
 	DeploymentName string `json:"deploymentName"`
 	Replicas       *int32 `json:"replicas"`
+	Image          string `json:"image"`
 }
 
 type FooStatus struct {

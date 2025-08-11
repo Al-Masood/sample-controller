@@ -176,6 +176,17 @@ func (c *Controller) syncHandler(ctx context.Context, objectRef cache.ObjectName
 		return err
 	}
 
+	if deployment.Spec.Template.Spec.Containers[0].Image != foo.Spec.Image {
+		logger.V(4).Info("Updating deployment image",
+			"currentImage", deployment.Spec.Template.Spec.Containers[0].Image,
+			"desiredImage", foo.Spec.Image)
+		_, err = c.kubeclientset.AppsV1().Deployments(foo.Namespace).Update(ctx, newDeployment(foo), metav1.UpdateOptions{})
+	}
+
+	if err != nil {
+		return err
+	}
+
 	err = c.updateFooStatus(ctx, foo, deployment)
 
 	if err != nil {
@@ -243,6 +254,11 @@ func newDeployment(foo *samplecomv1alpha1.Foo) *appsv1.Deployment {
 		"app": "foo",
 	}
 
+	image := foo.Spec.Image
+	if image == "" {
+		image = "almasood/book-server"
+	}
+
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: foo.Spec.DeploymentName,
@@ -262,8 +278,8 @@ func newDeployment(foo *samplecomv1alpha1.Foo) *appsv1.Deployment {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:  "nginx",
-							Image: "nginx:latest",
+							Name:  "main",
+							Image: image,
 						},
 					},
 				},

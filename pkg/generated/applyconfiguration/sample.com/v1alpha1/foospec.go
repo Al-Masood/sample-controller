@@ -23,6 +23,7 @@ package v1alpha1
 type FooSpecApplyConfiguration struct {
 	DeploymentName *string `json:"deploymentName,omitempty"`
 	Replicas       *int32  `json:"replicas,omitempty"`
+	Image          *string `json:"image,omitempty"`
 }
 
 // FooSpecApplyConfiguration constructs a declarative configuration of the FooSpec type for use with
@@ -44,5 +45,13 @@ func (b *FooSpecApplyConfiguration) WithDeploymentName(value string) *FooSpecApp
 // If called multiple times, the Replicas field is set to the value of the last call.
 func (b *FooSpecApplyConfiguration) WithReplicas(value int32) *FooSpecApplyConfiguration {
 	b.Replicas = &value
+	return b
+}
+
+// WithImage sets the Image field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Image field is set to the value of the last call.
+func (b *FooSpecApplyConfiguration) WithImage(value string) *FooSpecApplyConfiguration {
+	b.Image = &value
 	return b
 }
